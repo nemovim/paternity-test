@@ -13,13 +13,17 @@ def createDirectory(path):
         os.makedirs(path)
 
 def getImgPathArr(path):
-    imgPathArr = glob.glob(os.path.join(path, "*/*/2.Individuals/*.JPG"))
+    imgPathArr = [*glob.glob(os.path.join(path, f"**/2.Individuals/*.JPG"), recursive=True), *glob.glob(os.path.join(path, f"**/2.Individuals/*.jpg"), recursive=True)]
     imgPathArr = list(filter(lambda image_path: image_path.split('_')[-2] == '0' and 'CAM' not in image_path.split('_')[-1], imgPathArr))
 
     return imgPathArr
 
 def loadImg(path):
-    return np.array(Image.open(path).resize((224, 224)))
+    try:
+        img = Image.open(path+"_0_01.JPG")
+    except:
+        img = Image.open(path+"_0_01.jpg")
+    return np.array(img.resize((224, 224)))
 
 def compareImg(img1, img2):
     return np.mean(cv2.absdiff(img1, img2))
@@ -42,20 +46,16 @@ def getExactSameImgPathPairArr(sameImgPathSet, threshold=40):
     sameImgPathPairArr = list(sameImgPathSet)
     exactSamePathPairArr = []
     for i in range(len(sameImgPathPairArr)):
-        path1 = sameImgPathPairArr[i][0]+"_0_01.JPG"
-        path2 = sameImgPathPairArr[i][1]+"_0_01.JPG"
+        path1 = sameImgPathPairArr[i][0]
+        path2 = sameImgPathPairArr[i][1]
         diff = compareImg(loadImg(path1), loadImg(path2))
         if diff < threshold:
             exactSamePathPairArr.append(sameImgPathPairArr[i])
     return exactSamePathPairArr
 
-def extractImg(type, threshold=40):
-    if type == 'train':
-        _path = "./dataset/train/*"
-    elif type == 'test':
-        _path = "./dataset/test"
+def extractImg(_path, threshold=40):
 
-    dst = os.path.join(f"./dataset/{type}", 'extracted')
+    dst = os.path.join(_path, 'extracted')
     createDirectory(dst)
 
     pathArr = getImgPathArr(_path)
@@ -81,5 +81,5 @@ def extractImg(type, threshold=40):
             copyImg(path, dst)
 
 if __name__ == '__main__':
-    extractImg('train')
-    extractImg('test')
+    extractImg('./dataset/train')
+    extractImg('./dataset/test')

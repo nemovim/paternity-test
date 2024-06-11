@@ -58,7 +58,8 @@ class Dataset(torch.utils.data.IterableDataset):
         Creates two lists of indices that will form the pairs, to be fed for training or evaluation.
         '''
 
-        self.image_paths = glob.glob(os.path.join(self.path, "*.JPG"))
+        self.image_paths = [*glob.glob(os.path.join(self.path, "*.JPG")), *glob.glob(os.path.join(self.path, "*.jpg"))]
+
         self.image_classes = []
         self.class_indices = {}
 
@@ -108,9 +109,15 @@ class Dataset(torch.utils.data.IterableDataset):
     def isPositive(self, class1, class2):
         rel_dict = {
             'S': ['F', 'M'],
+            'S2': ['F', 'M'],
+            'S3': ['F', 'M'],
+            'S4': ['F', 'M'],
             'D': ['F', 'M'],
-            'F': ['GF', 'GM', 'S', 'D'],
-            'M': ['GF', 'GM', 'S', 'D'],
+            'D2': ['F', 'M'],
+            'D3': ['F', 'M'],
+            'D4': ['F', 'M'],
+            'F': ['GF', 'GM', 'S', 'D', 'S2', 'D2', 'S3', 'D3', 'S4', 'D4'],
+            'M': ['GF', 'GM', 'S', 'D', 'S2', 'D2', 'S3', 'D3', 'S4', 'D4'],
             'GF': ['F', 'M'],
             'GM': ['F', 'M'],
         }

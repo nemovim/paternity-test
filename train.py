@@ -69,13 +69,14 @@ if __name__ == "__main__":
     os.makedirs(args.out_path, exist_ok=True)
 
     # Set device to CUDA if a CUDA device is available, else CPU
+    print('cuda: ', torch.cuda.is_available())
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     train_dataset   = Dataset(args.train_path, shuffle_pairs=True, augment=True)
     val_dataset     = Dataset(args.val_path, shuffle_pairs=False, augment=False)
     
-    train_dataloader = DataLoader(train_dataset, batch_size=8, drop_last=True)
-    val_dataloader   = DataLoader(val_dataset, batch_size=8)
+    train_dataloader = DataLoader(train_dataset, batch_size=32, drop_last=True)
+    val_dataloader   = DataLoader(val_dataset, batch_size=32)
 
     model = SiameseNetwork(backbone=args.backbone)
     model.to(device)
