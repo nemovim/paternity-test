@@ -58,17 +58,18 @@ class Dataset(torch.utils.data.IterableDataset):
         Creates two lists of indices that will form the pairs, to be fed for training or evaluation.
         '''
 
-        self.image_paths = glob.glob(os.path.join(self.path, "*/*.png"))
+        self.image_paths = glob.glob(os.path.join(self.path, "*.JPG"))
         self.image_classes = []
         self.class_indices = {}
 
         for image_path in self.image_paths:
-            image_class = image_path.split(os.path.sep)[-2]
+            # F0001_IND_D_18_0_01.JPG => F0001_IND_D = image_class
+            image_class = '_'.join(image_path.split(os.path.sep)[-1].split('_')[0:3])
             self.image_classes.append(image_class)
 
-            if image_class not in self.class_indices:
-                self.class_indices[image_class] = []
-            self.class_indices[image_class].append(self.image_paths.index(image_path))
+            # if image_class not in self.class_indices:
+            #     self.class_indices[image_class] = []
+            # self.class_indices[image_class].append(self.image_paths.index(image_path))
 
         self.indices1 = np.arange(len(self.image_paths))
 
@@ -81,17 +82,48 @@ class Dataset(torch.utils.data.IterableDataset):
 
         select_pos_pair = np.random.rand(len(self.image_paths)) < 0.5
 
+
         self.indices2 = []
 
         for i, pos in zip(self.indices1, select_pos_pair):
             class1 = self.image_classes[i]
+
             if pos:
-                class2 = class1
+
+                pos_list = list(filter(lambda _class: self.isPositive(class1, _class), self.image_classes))
+
+                class2 = np.random.choice(pos_list)
             else:
-                class2 = np.random.choice(list(set(self.class_indices.keys()) - {class1}))
-            idx2 = np.random.choice(self.class_indices[class2])
+
+                neg_list = list(filter(lambda _class: not self.isPositive(class1, _class), self.image_classes))
+
+                class2 = np.random.choice(neg_list)
+
+            # idx2 = np.random.choice(self.class_indices[class2])
+            idx2 = self.image_classes.index(class2)
             self.indices2.append(idx2)
+
         self.indices2 = np.array(self.indices2)
+    
+    def isPositive(self, class1, class2):
+        rel_dict = {
+            'S': ['F', 'M'],
+            'D': ['F', 'M'],
+            'F': ['GF', 'GM', 'S', 'D'],
+            'M': ['GF', 'GM', 'S', 'D'],
+            'GF': ['F', 'M'],
+            'GM': ['F', 'M'],
+        }
+
+        family1 = class1.split('_')[0]
+        rel1 = class1.split('_')[-1]
+        family2 = class2.split('_')[0]
+        rel2 = class2.split('_')[-1]
+
+        if family1 == family2 and (rel2 in rel_dict[rel1]):
+            return True
+        else:
+            return False
 
     def __iter__(self):
         self.create_pairs()
@@ -110,8 +142,9 @@ class Dataset(torch.utils.data.IterableDataset):
             if self.transform:
                 image1 = self.transform(image1).float()
                 image2 = self.transform(image2).float()
+            
 
-            yield (image1, image2), torch.FloatTensor([class1==class2]), (class1, class2)
+            yield (image1, image2), torch.FloatTensor([self.isPositive(class1, class2)]), (class1, class2), (image_path1, image_path2)
         
     def __len__(self):
         return len(self.image_paths)

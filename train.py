@@ -1,5 +1,6 @@
 import os
 import argparse
+import time
 
 import cv2
 import numpy as np
@@ -87,15 +88,19 @@ if __name__ == "__main__":
     best_val = 10000000000
 
     for epoch in range(args.epochs):
-        print("[{} / {}]".format(epoch, args.epochs))
+        print("Epoch [{} / {}]".format(epoch, args.epochs))
         model.train()
+
+        t = time.time()
 
         losses = []
         correct = 0
         total = 0
 
+        loopCnt = len(train_dataloader)
         # Training Loop Start
-        for (img1, img2), y, (class1, class2) in train_dataloader:
+        for i, ((img1, img2), y, (class1, class2), (path1, path2)) in enumerate(train_dataloader):
+
             img1, img2, y = map(lambda x: x.to(device), [img1, img2, y])
 
             prob = model(img1, img2)
@@ -108,6 +113,10 @@ if __name__ == "__main__":
             losses.append(loss.item())
             correct += torch.count_nonzero(y == (prob > 0.5)).item()
             total += len(y)
+
+            print(f"Batch [{i}/{loopCnt}] | Epoch [{epoch}/{args.epochs}] | dt: {time.time()-t}s")
+
+            t = time.time()
 
         writer.add_scalar('train_loss', sum(losses)/len(losses), epoch)
         writer.add_scalar('train_acc', correct / total, epoch)
@@ -122,7 +131,7 @@ if __name__ == "__main__":
         correct = 0
         total = 0
 
-        for (img1, img2), y, (class1, class2) in val_dataloader:
+        for (img1, img2), y, (class1, class2), (path1, path2) in val_dataloader:
             img1, img2, y = map(lambda x: x.to(device), [img1, img2, y])
 
             prob = model(img1, img2)

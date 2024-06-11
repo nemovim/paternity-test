@@ -1,0 +1,9 @@
+/Lib
+/Include
+/Library
+/Scripts
+/share
+/dataset
+/.vscode
+/etc
+pyvenv.cfg
