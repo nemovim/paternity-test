@@ -8,10 +8,12 @@ class TripleSiameseNetwork(nn.Module):
     def __init__(self, layer='conn'):
         super(TripleSiameseNetwork, self).__init__()
         # ResNet18을 사용하여 feature extractor 정의
-        resnet = models.resnet18(weights=ResNet18_Weights.DEFAULT)
-        self.feature_extractor1 = nn.Sequential(*list(resnet.children())[:-1])  # 마지막 fc layer 제거
-        self.feature_extractor2 = nn.Sequential(*list(resnet.children())[:-1])  # 마지막 fc layer 제거
-        self.feature_extractor3 = nn.Sequential(*list(resnet.children())[:-1])  # 마지막 fc layer 제거
+        resnet1 = models.resnet18(weights=ResNet18_Weights.DEFAULT)
+        resnet2 = models.resnet18(weights=ResNet18_Weights.DEFAULT)
+        resnet3 = models.resnet18(weights=ResNet18_Weights.DEFAULT)
+        self.feature_extractor1 = nn.Sequential(*list(resnet1.children())[:-1])  # 마지막 fc layer 제거
+        self.feature_extractor2 = nn.Sequential(*list(resnet2.children())[:-1])  # 마지막 fc layer 제거
+        self.feature_extractor3 = nn.Sequential(*list(resnet3.children())[:-1])  # 마지막 fc layer 제거
         self.layer = layer
         
         # Fully connected layer
@@ -21,7 +23,7 @@ class TripleSiameseNetwork(nn.Module):
 
         self.cls_head = nn.Sequential(
             nn.Dropout(p=0.5),
-            nn.Linear(512, 512),
+            nn.Linear(3*512, 512),
             nn.BatchNorm1d(512),
             nn.ReLU(),
 
@@ -57,11 +59,9 @@ class TripleSiameseNetwork(nn.Module):
         v3 = self.forward3(img3)
         
         # Distance vector 계산 (L1 distance)
-        # d1 = torch.abs(v1 - v2)
-        # d2 = torch.abs(v2 - v3)
-        # d3 = torch.abs(v3 - v1)
-
-        d = v1 * v2 * v3
+        d1 = torch.abs(v1 - v2)
+        d2 = torch.abs(v2 - v3)
+        d3 = torch.abs(v3 - v1)
         
         # if self.layer == 'conn':
         #     # Fully connected layer에 통과시켜 최종 출력 계산
@@ -72,8 +72,7 @@ class TripleSiameseNetwork(nn.Module):
         #     concat = torch.stack((d1, d2, d3), dim=1)
         #     output = self.conv(concat).squeeze(-1)  # (batch_size, 2)
 
-        # output = self.cls_head(torch.cat((d1, d2, d3), 1))
-        output = self.cls_head(d)
+        output = self.cls_head(torch.cat((d1, d2, d3), 1))
 
         return output
 

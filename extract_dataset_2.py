@@ -13,6 +13,7 @@ def createDirectory(path):
         os.makedirs(path)
 
 def getImgPathArr(path):
+    # imgPathArr = glob.glob(os.path.join(path, f"**/2.Individuals/*.JPG"), recursive=True)
     imgPathArr = [*glob.glob(os.path.join(path, f"**/2.Individuals/*.JPG"), recursive=True), *glob.glob(os.path.join(path, f"**/2.Individuals/*.jpg"), recursive=True)]
     imgPathArr = list(filter(lambda image_path: image_path.split('_')[-2] == '0' and 'CAM' not in image_path.split('_')[-1], imgPathArr))
 
@@ -78,8 +79,6 @@ def getExactPossiblePathPairArr(possiblePathPairArr, threshold=40):
     return exactSamePathPairArr
 
 def extractImg(_path, threshold=40):
-
-
     pathArr = getImgPathArr(_path)
     possiblePathPairArr = getExactPossiblePathPairArr(getPossiblePathPairArr(pathArr, getSameImgPathSet(pathArr)), threshold)
 
@@ -88,12 +87,24 @@ def extractImg(_path, threshold=40):
     print('Below gropus will be combined')
     print(possibleFamilyPairArr)
 
-    for i, possibleFamilyPair in enumerate(possibleFamilyPairArr):
+    excludedIdxArr = []
+    dirIdx = 0
+
+    for i in range(len(possibleFamilyPairArr)):
+        if i in excludedIdxArr:
+            continue
+
+        possibleFamilyPair = possibleFamilyPairArr[i]
         family1 = possibleFamilyPair[0]
         family2 = possibleFamilyPair[1]
         sameRel = possibleFamilyPair[2]
 
-        dst = os.path.join(_path, os.path.join('families', str(i)))
+        if sameRel != 'M' and sameRel != 'F':
+            for j in range(i+1, len(possibleFamilyPairArr)):
+                if family1 in possibleFamilyPairArr[j] and family2 in possibleFamilyPairArr[j]:
+                    excludedIdxArr.append(j)
+
+        dst = os.path.join(_path, os.path.join('families', str(dirIdx)))
         createDirectory(dst)
 
         for path in pathArr:
@@ -123,6 +134,9 @@ def extractImg(_path, threshold=40):
                         copyImg(path, os.path.join(dst, f'{rel}_{cnt}'))
                 if family2 in path and (rel == 'M' or rel == 'F'):
                     copyImg(path, os.path.join(dst, f'{rel}_{cnt}'))
+
+        dirIdx += 1
+
 
 if __name__ == '__main__':
     print('[Train]')

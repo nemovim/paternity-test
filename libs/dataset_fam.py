@@ -55,14 +55,21 @@ class Dataset(torch.utils.data.IterableDataset):
 
         self.image_classes = []
         self.class_indices = {}
+        self.rel_indices = {}
 
         for image_path in self.image_paths:
             image_class = image_path.split(os.path.sep)[-2]
+            image_rel = image_path.split(os.path.sep)[-1].split('_')[0]
+
             self.image_classes.append(image_class)
 
             if image_class not in self.class_indices:
                 self.class_indices[image_class] = []
             self.class_indices[image_class].append(self.image_paths.index(image_path))
+
+            if image_rel not in self.rel_indices:
+                self.rel_indices[image_rel] = []
+            self.rel_indices[image_rel].append(self.image_paths.index(image_path))
 
         self.create_pairs()
 
@@ -71,7 +78,7 @@ class Dataset(torch.utils.data.IterableDataset):
         Creates two lists of indices that will form the pairs, to be fed for training or evaluation.
         '''
 
-        self.indices_C = np.arange(len(self.image_paths))
+        self.indices_C = np.copy(self.rel_indices['C'])
 
         if self.shuffle_pairs:
             np.random.seed(int(time.time()))
@@ -80,8 +87,8 @@ class Dataset(torch.utils.data.IterableDataset):
             # If shuffling is set to off, set the random seed to 1, to make it deterministic.
             np.random.seed(1)
 
-        select_pos_pair_M = np.random.rand(len(self.image_paths)) < 0.5
-        select_pos_pair_F = np.random.rand(len(self.image_paths)) < 0.5
+        select_pos_pair_M = np.random.rand(len(self.rel_indices['C'])) < 0.5
+        select_pos_pair_F = np.random.rand(len(self.rel_indices['C'])) < 0.5
 
         self.indices_M = []
         self.indices_F = []
@@ -98,7 +105,15 @@ class Dataset(torch.utils.data.IterableDataset):
                 class_F = np.random.choice(list(set(self.class_indices.keys()) - {class_C}))
 
             idx_M = np.random.choice(self.class_indices[class_M])
+
+            while idx_M not in self.rel_indices['M']:
+                idx_M = np.random.choice(self.class_indices[class_M])
+
             idx_F = np.random.choice(self.class_indices[class_F])
+
+            while idx_F not in self.rel_indices['F']:
+                idx_F = np.random.choice(self.class_indices[class_F])
+
             self.indices_M.append(idx_M)
             self.indices_F.append(idx_F)
 
@@ -134,4 +149,4 @@ class Dataset(torch.utils.data.IterableDataset):
             yield (image1, image2, image3), (torch.FloatTensor([class1==class2]), torch.FloatTensor([class1==class3])), (class1, class2, class3)
         
     def __len__(self):
-        return len(self.image_paths)
+        return len(self.rel_indices['C'])
