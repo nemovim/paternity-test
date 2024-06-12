@@ -147,7 +147,7 @@ if __name__ == '__main__':
 
     createDirectory('./out_triple')
 
-    train_dataset = Dataset('./dataset/test/families', shuffle_pairs=True, augment=True)
+    train_dataset = Dataset('./dataset/train/families', shuffle_pairs=True, augment=True)
     test_dataset = Dataset('./dataset/test/families', shuffle_pairs=True, augment=True)
     train_dataloader = DataLoader(train_dataset, batch_size=32)
     test_dataloader = DataLoader(test_dataset, batch_size=32)
