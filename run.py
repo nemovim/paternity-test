@@ -164,4 +164,4 @@ if __name__ == '__main__':
     optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
     criterion = ContrastiveLoss(margin=1.0)
     
-    train(model, train_dataloader, test_dataloader, criterion, optimizer, num_epochs=10)
+    train(model, train_dataloader, test_dataloader, criterion, optimizer, num_epochs=20)

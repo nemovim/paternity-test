@@ -50,13 +50,6 @@ class Dataset(torch.utils.data.IterableDataset):
                 transforms.Resize(self.feed_shape[1:])
             ])
 
-        self.create_pairs()
-
-    def create_pairs(self):
-        '''
-        Creates two lists of indices that will form the pairs, to be fed for training or evaluation.
-        '''
-
         # self.image_paths = [*glob.glob(os.path.join(self.path, "*/*.JPG")), *glob.glob(os.path.join(self.path, "*/*.jpg"))]
         self.image_paths = glob.glob(os.path.join(self.path, "*/*.pt"))
 
@@ -70,6 +63,13 @@ class Dataset(torch.utils.data.IterableDataset):
             if image_class not in self.class_indices:
                 self.class_indices[image_class] = []
             self.class_indices[image_class].append(self.image_paths.index(image_path))
+
+        self.create_pairs()
+
+    def create_pairs(self):
+        '''
+        Creates two lists of indices that will form the pairs, to be fed for training or evaluation.
+        '''
 
         self.indices_C = np.arange(len(self.image_paths))
 
