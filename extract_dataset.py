@@ -38,6 +38,8 @@ def getSameImgPathSet(_imgPathArr):
             if imgNameArr[i][2:5] == imgNameArr[j][2:5] and imgNameArr[i][0] != imgNameArr[j][0]:
                 path1 = os.path.join((os.path.sep).join(imgPathArr[i][:-1]), '_'.join(imgNameArr[i][:-2]))
                 path2 = os.path.join((os.path.sep).join(imgPathArr[j][:-1]), '_'.join(imgNameArr[j][:-2]))
+                if (path1, path2) in sameImgPathSet or (path2, path1) in sameImgPathSet:
+                    continue
                 sameImgPathSet.add((path1, path2))
     
     return sameImgPathSet
@@ -46,6 +48,7 @@ def getExactSameImgPathPairArr(sameImgPathSet, threshold=40):
     sameImgPathPairArr = list(sameImgPathSet)
     exactSamePathPairArr = []
     for i in range(len(sameImgPathPairArr)):
+        print(f'Matching... {i}/{len(sameImgPathPairArr)}')
         path1 = sameImgPathPairArr[i][0]
         path2 = sameImgPathPairArr[i][1]
         diff = compareImg(loadImg(path1), loadImg(path2))
