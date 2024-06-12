@@ -22,7 +22,7 @@ for i, image_path in enumerate(image_paths):
   path_arr = image_path.split(os.path.sep)
   fileName = path_arr[-1]
   fileName = '.'.join([*fileName.split('.')[:-1], 'pt'])
-  dirPath = os.path.join(f'{path}_pt', (os.path.sep).join(path_arr[:-1]))
+  dirPath = os.path.join(f'{path}_pt', (os.path.sep).join(path_arr[-2:-1]))
 
   if not os.path.exists(dirPath):
     os.makedirs(dirPath)

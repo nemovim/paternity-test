@@ -17,7 +17,21 @@ class TripleSiameseNetwork(nn.Module):
         # Fully convolutional layer
         self.conv = nn.Conv1d(in_channels=3, out_channels=2, kernel_size=512, stride=1)  # 1D convolutional layer
 
-        self.out = nn.Sigmoid()
+        self.cls_head = nn.Sequential(
+            nn.Dropout(p=0.5),
+            nn.Linear(3, 512),
+            nn.BatchNorm1d(512),
+            nn.ReLU(),
+
+            nn.Dropout(p=0.5),
+            nn.Linear(512, 64),
+            nn.BatchNorm1d(64),
+            nn.Sigmoid(),
+            nn.Dropout(p=0.5),
+
+            nn.Linear(64, 2),
+            nn.Sigmoid(),
+        )
         
     def forward_one(self, x):
         x = self.feature_extractor(x)
@@ -35,16 +49,16 @@ class TripleSiameseNetwork(nn.Module):
         d2 = torch.abs(v2 - v3)
         d3 = torch.abs(v3 - v1)
         
-        if self.layer == 'conn':
-            # Fully connected layer에 통과시켜 최종 출력 계산
-            concat = torch.cat((d1, d2, d3), 1)
-            output = self.fc(concat)
-        elif self.layer == 'conv':
-            # Fully convolutional layer
-            concat = torch.stack((d1, d2, d3), dim=1)
-            output = self.conv(concat).squeeze(-1)  # (batch_size, 2)
+        # if self.layer == 'conn':
+        #     # Fully connected layer에 통과시켜 최종 출력 계산
+        #     concat = torch.cat((d1, d2, d3), 1)
+        #     output = self.fc(concat)
+        # elif self.layer == 'conv':
+        #     # Fully convolutional layer
+        #     concat = torch.stack((d1, d2, d3), dim=1)
+        #     output = self.conv(concat).squeeze(-1)  # (batch_size, 2)
 
-        output = self.out(output)
+        output = self.cls_head(torch.cat((d1, d2, d3), 1))
 
         return output
 
@@ -52,6 +66,7 @@ class ContrastiveLoss(nn.Module):
     def __init__(self, margin=1.0):
         super(ContrastiveLoss, self).__init__()
         self.margin = margin
+        self.bce_loss = nn.BCELoss()
 
     def forward(self, output, label1, label2):
         # label1: 자식이 엄마의 친자식일 확률 라벨 (0 또는 1)
@@ -61,10 +76,13 @@ class ContrastiveLoss(nn.Module):
         # loss1 = (1 - label1) * torch.pow(prob1, 2) + label1 * torch.pow(torch.clamp(self.margin - prob1, min=0.0), 2)
         # loss2 = (1 - label2) * torch.pow(prob2, 2) + label2 * torch.pow(torch.clamp(self.margin - prob2, min=0.0), 2)
 
-        loss1 = (1 - label1) * torch.pow(prob1, 2) + label1 * torch.pow(1 - prob1, 2)
-        loss2 = (1 - label2) * torch.pow(prob2, 2) + label2 * torch.pow(1 - prob2, 2)
+        # loss1 = (1 - label1) * torch.pow(prob1, 2) + label1 * torch.pow(1 - prob1, 2)
+        # loss2 = (1 - label2) * torch.pow(prob2, 2) + label2 * torch.pow(1 - prob2, 2)
+
+        loss1 = self.bce_loss(prob1, label1.reshape(prob1.size(0)))
+        loss2 = self.bce_loss(prob2, label2.reshape(prob2.size(0)))
         
-        loss = torch.mean(loss1 + loss2)
+        loss = (loss1 + loss2)
         return loss
 
 
