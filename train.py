@@ -85,8 +85,8 @@ if __name__ == "__main__":
     train_dataset   = Dataset(args.train_path, shuffle_pairs=True, augment=True)
     val_dataset     = Dataset(args.val_path, shuffle_pairs=False, augment=False)
     
-    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, drop_last=True)
-    val_dataloader   = DataLoader(val_dataset, batch_size=args.batch_size)
+    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, drop_last=True, num_workers=6)
+    val_dataloader   = DataLoader(val_dataset, batch_size=args.batch_size, num_workers=6)
 
     model = SiameseNetwork(backbone=args.backbone)
     model.to(device)
@@ -136,6 +136,9 @@ if __name__ == "__main__":
 
             t = time.time()
 
+            if i+1 >= loopCnt:
+                break
+
         writer.add_scalar('train_loss', sum(losses)/len(losses), epoch)
         writer.add_scalar('train_acc', correct / total, epoch)
 
@@ -149,7 +152,7 @@ if __name__ == "__main__":
         correct = 0
         total = 0
 
-        for (img1, img2), y, (class1, class2), (path1, path2) in val_dataloader:
+        for i, ((img1, img2), y, (class1, class2), (path1, path2)) in enumerate(val_dataloader):
             img1, img2, y = map(lambda x: x.to(device), [img1, img2, y])
 
             prob = model(img1, img2)
@@ -158,6 +161,9 @@ if __name__ == "__main__":
             losses.append(loss.item())
             correct += torch.count_nonzero(y == (prob > 0.5)).item()
             total += len(y)
+
+            if i+1 >= len(val_dataloader):
+                break
 
         val_loss = sum(losses)/max(1, len(losses))
         writer.add_scalar('val_loss', val_loss, epoch)

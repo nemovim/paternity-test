@@ -57,7 +57,8 @@ class Dataset(torch.utils.data.IterableDataset):
         Creates two lists of indices that will form the pairs, to be fed for training or evaluation.
         '''
 
-        self.image_paths = [*glob.glob(os.path.join(self.path, "*/*.JPG")), *glob.glob(os.path.join(self.path, "*/*.jpg"))]
+        # self.image_paths = [*glob.glob(os.path.join(self.path, "*/*.JPG")), *glob.glob(os.path.join(self.path, "*/*.jpg"))]
+        self.image_paths = glob.glob(os.path.join(self.path, "*/*.pt"))
 
         self.image_classes = []
         self.class_indices = {}
@@ -117,14 +118,18 @@ class Dataset(torch.utils.data.IterableDataset):
             class2 = self.image_classes[idx2]
             class3 = self.image_classes[idx3]
 
-            image1 = Image.open(image_path1).convert("RGB")
-            image2 = Image.open(image_path2).convert("RGB")
-            image3 = Image.open(image_path3).convert("RGB")
+            # image1 = Image.open(image_path1).convert("RGB")
+            # image2 = Image.open(image_path2).convert("RGB")
+            # image3 = Image.open(image_path3).convert("RGB")
 
-            if self.transform:
-                image1 = self.transform(image1).float()
-                image2 = self.transform(image2).float()
-                image3 = self.transform(image3).float()
+            image1 = torch.load(image_path1)
+            image2 = torch.load(image_path2)
+            image3 = torch.load(image_path3)
+
+            # if self.transform:
+            #     image1 = self.transform(image1).float()
+            #     image2 = self.transform(image2).float()
+            #     image3 = self.transform(image3).float()
 
             yield (image1, image2, image3), (torch.FloatTensor([class1==class2]), torch.FloatTensor([class1==class3])), (class1, class2, class3)
         

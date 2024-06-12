@@ -12,3 +12,4 @@ pyvenv.cfg
 /results
 /out_triple
 __pycache__
+test.ipynb

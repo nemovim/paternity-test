@@ -49,13 +49,16 @@ def train(model, dataloader, test_dataloader, criterion, optimizer, num_epochs=1
             predicted1 = (prob1 > 0.5).float()
             predicted2 = (prob2 > 0.5).float()
 
-            correct1 += (predicted1 == label1.resize(img1.size(0))).sum().item()
-            correct2 += (predicted2 == label2.resize(img1.size(0))).sum().item()
+            correct1 += (predicted1 == label1.reshape(img1.size(0))).sum().item()
+            correct2 += (predicted2 == label2.reshape(img1.size(0))).sum().item()
             total += label1.size(0)
 
-            print(f"Batch [{i+1}/{loopCnt}] | Epoch [{epoch+1}/{num_epochs}] | dt: {time.time()-t}s")
+            print(f"[Train] Batch [{i+1}/{loopCnt}] | Epoch [{epoch+1}/{num_epochs}] | dt: {time.time()-t}s")
 
             t = time.time()
+
+            if i+1 >= loopCnt:
+                break
         
         epoch_loss = running_loss / len(dataloader.dataset)
         data['loss'].append(epoch_loss)
@@ -66,7 +69,7 @@ def train(model, dataloader, test_dataloader, criterion, optimizer, num_epochs=1
         accuracy2 = correct2 / total
         data['acc2'].append(accuracy2)
         
-        print(f'Epoch {epoch+1}/{num_epochs}, Loss: {epoch_loss}, Accuracy for Mother: {accuracy1 * 100}%, Accuracy for Father: {accuracy2 * 100}%')
+        print(f'[Train] Loss : {epoch_loss} | M Accuracy: {accuracy1 * 100}% | F Accuracy: {accuracy2 * 100}%')
 
         test(model, test_dataloader, epoch, num_epochs)
 
@@ -81,7 +84,7 @@ def train(model, dataloader, test_dataloader, criterion, optimizer, num_epochs=1
                 f"./out_triple/best.pth"
             )            
 
-        if epoch%5 == 0:
+        if (epoch+1)%5 == 0:
             torch.save(
                 {
                     "epoch": epoch + 1,
@@ -120,8 +123,8 @@ def test(model, dataloader, epoch, num_epochs):
             predicted1 = (prob1 > 0.5).float()
             predicted2 = (prob2 > 0.5).float()
             
-            correct1 += (predicted1 == label1).sum().item()
-            correct2 += (predicted2 == label2).sum().item()
+            correct1 += (predicted1 == label1.reshape(img1.size(0))).sum().item()
+            correct2 += (predicted2 == label2.reshape(img1.size(0))).sum().item()
             total += label1.size(0)
             
             data['acc1'].append(correct1 / total)
@@ -129,12 +132,17 @@ def test(model, dataloader, epoch, num_epochs):
             data['loss'].append(running_loss / cnt)
             cnt += 1
 
-            print(f"Batch [{i+1}/{loopCnt}] | Epoch [{epoch+1}/{num_epochs}] | dt: {time.time()-t}s")
+            print(f"[Test] Batch [{i+1}/{loopCnt}] | Epoch [{epoch+1}/{num_epochs}] | dt: {time.time()-t}s")
+
+            t = time.time()
+
+            if i+1 >= loopCnt:
+                break
     
     epoch_loss = running_loss / len(dataloader.dataset)
     accuracy1 = correct1 / total
     accuracy2 = correct2 / total
-    print(f'Loss : {epoch_loss}, Accuracy for Mother: {accuracy1 * 100}%, Accuracy for Father: {accuracy2 * 100}%')
+    print(f'[Test] Loss : {epoch_loss} | M Accuracy: {accuracy1 * 100}% | F Accuracy: {accuracy2 * 100}%')
     
     df = pd.DataFrame(data)
     df.to_csv('./out_triple/test.csv', index=False)
@@ -147,10 +155,10 @@ if __name__ == '__main__':
 
     createDirectory('./out_triple')
 
-    train_dataset = Dataset('./dataset/train/families', shuffle_pairs=True, augment=True)
+    train_dataset = Dataset('./dataset/test/families', shuffle_pairs=True, augment=True)
     test_dataset = Dataset('./dataset/test/families', shuffle_pairs=True, augment=True)
-    train_dataloader = DataLoader(train_dataset, batch_size=32)
-    test_dataloader = DataLoader(test_dataset, batch_size=32)
+    train_dataloader = DataLoader(train_dataset, batch_size=32, num_workers=8, drop_last=True)
+    test_dataloader = DataLoader(test_dataset, batch_size=32, num_workers=8)
     
     model = TripleSiameseNetwork(layer='conv').to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)

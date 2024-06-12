@@ -11,7 +11,9 @@ class TripleSiameseNetwork(nn.Module):
         super(TripleSiameseNetwork, self).__init__()
         # ResNet18을 사용하여 feature extractor 정의
         resnet = models.resnet18(weights=ResNet18_Weights.DEFAULT)
+
         self.feature_extractor = nn.Sequential(*list(resnet.children())[:-1])  # 마지막 fc layer 제거
+
         self.layer = layer
         
         # Fully connected layer
