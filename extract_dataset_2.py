@@ -47,7 +47,8 @@ def getSameImgPathSet(_imgPathArr):
 def getPossiblePathPairArr(imgPathArr, sameImgPathSet):
     sameImgPathPairArr = list(sameImgPathSet)
     possiblePathPairArr = []
-    for sameImgPathPair in sameImgPathPairArr:
+    for i, sameImgPathPair in enumerate(sameImgPathPairArr):
+        print(f'Checking... {i}/{len(sameImgPathPairArr)}')
         rel = sameImgPathPair[0].split('_')[-2]
         if rel == 'GM' or rel == 'GF':
             continue
@@ -103,16 +104,29 @@ def extractImg(_path, threshold=40):
             cnt = path.split('_')[-1]
 
             if sameRel == 'M' or sameRel == 'F':
-                if family1 in path and (rel == sameRel or rel == 'GM' or rel == 'GF'):
-                    copyImg(path, os.path.join(dst, f'{rel}_{cnt}'))
-                elif family2 in path and (rel == 'GM' or rel == 'GF'):
-                    copyImg(path, os.path.join(dst, f'{rel}_{cnt}'))
+                if family1 in path:
+                    if rel == sameRel:
+                        copyImg(path, os.path.join(dst, f'C_{cnt}'))
+                    elif rel == 'GM':
+                        copyImg(path, os.path.join(dst, f'M_{cnt}'))
+                    elif rel == 'GF':
+                        copyImg(path, os.path.join(dst, f'F_{cnt}'))
+                elif family2 in path:
+                    if rel == 'GM':
+                        copyImg(path, os.path.join(dst, f'M_{cnt}'))
+                    elif rel == 'GF':
+                        copyImg(path, os.path.join(dst, f'F_{cnt}'))
             else:
-                if family1 in path and (rel == sameRel or rel == 'M' or rel == 'F'):
-                    copyImg(path, os.path.join(dst, f'{rel}_{cnt}'))
+                if family1 in path:
+                    if rel == sameRel:
+                        copyImg(path, os.path.join(dst, f'C_{cnt}'))
+                    elif rel == 'M' or rel == 'F':
+                        copyImg(path, os.path.join(dst, f'{rel}_{cnt}'))
                 if family2 in path and (rel == 'M' or rel == 'F'):
                     copyImg(path, os.path.join(dst, f'{rel}_{cnt}'))
 
 if __name__ == '__main__':
+    print('[Train]')
     extractImg('./dataset/train')
+    print('[Test]')
     extractImg('./dataset/test')
