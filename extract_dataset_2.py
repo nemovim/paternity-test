@@ -62,7 +62,6 @@ def getPossiblePathPairArr(imgPathArr, sameImgPathSet):
                 possiblePathPairArr.append((*sameImgPathPair, rel))
         elif ('F' in family1RelSet and 'M' in family2RelSet) or ('M' in family1RelSet and 'F' in family2RelSet):
             if rel == 'S' or rel == 'D' or rel == 'S2' or rel == 'D2' or rel == 'S3' or rel == 'D3' or rel == 'S4' or rel == 'D4':
-            # if rel == 'S' or rel == 'D':
                 possiblePathPairArr.append((*sameImgPathPair, rel))
     
     return possiblePathPairArr

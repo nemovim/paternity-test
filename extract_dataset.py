@@ -34,7 +34,7 @@ def getSameImgPathSet(_imgPathArr):
     sameImgPathSet = set()
 
     for i in range(len(imgPathArr)):
-        print(f'Checking... {i}/{len(imgPathArr)}')
+        print(f'Checking... {i+1}/{len(imgPathArr)}')
         for j in range(i+1, len(imgPathArr)):
             if imgNameArr[i][2:5] == imgNameArr[j][2:5] and imgNameArr[i][0] != imgNameArr[j][0]:
                 path1 = os.path.join((os.path.sep).join(imgPathArr[i][:-1]), '_'.join(imgNameArr[i][:-2]))
@@ -49,7 +49,7 @@ def getExactSameImgPathPairArr(sameImgPathSet, threshold=40):
     sameImgPathPairArr = list(sameImgPathSet)
     exactSamePathPairArr = []
     for i in range(len(sameImgPathPairArr)):
-        print(f'Matching... {i}/{len(sameImgPathPairArr)}')
+        print(f'Matching... {i+1}/{len(sameImgPathPairArr)}')
         path1 = sameImgPathPairArr[i][0]
         path2 = sameImgPathPairArr[i][1]
         diff = compareImg(loadImg(path1), loadImg(path2))
@@ -85,5 +85,8 @@ def extractImg(_path, threshold=40):
             copyImg(path, dst)
 
 if __name__ == '__main__':
+    print('[Train]')
     extractImg('./dataset/train')
+    print('[Test]')
     extractImg('./dataset/test')
+
