@@ -50,6 +50,13 @@ if __name__ == "__main__":
         default=1e-4
     )
     parser.add_argument(
+        '-b',
+        '--batch_size',
+        type=int,
+        help="Batch size to train",
+        default=32
+    )
+    parser.add_argument(
         '-e',
         '--epochs',
         type=int,
@@ -82,8 +89,8 @@ if __name__ == "__main__":
     train_dataset   = Dataset(args.train_path, shuffle_pairs=True, augment=True)
     val_dataset     = Dataset(args.val_path, shuffle_pairs=False, augment=False)
     
-    train_dataloader = DataLoader(train_dataset, batch_size=32, drop_last=True)
-    val_dataloader   = DataLoader(val_dataset, batch_size=32)
+    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, drop_last=True)
+    val_dataloader   = DataLoader(val_dataset, batch_size=args.batch_size)
 
     model = SiameseNetwork(backbone=args.backbone)
     model.to(device)
@@ -96,7 +103,6 @@ if __name__ == "__main__":
     initial_epoch = args.load_model
 
     if args.load_model != 0:
-        initial_epoch -= 1
         pth = torch.load(os.path.join(args.out_path, f"./epoch_{args.load_model}.pth"))
         model.load_state_dict(pth['model_state_dict'])
         optimizer.load_state_dict(pth['optimizer_state_dict'])
@@ -104,7 +110,7 @@ if __name__ == "__main__":
     best_val = 10000000000
 
     for epoch in range(initial_epoch, args.epochs):
-        print("Epoch [{} / {}]".format(epoch, args.epochs))
+        print("Epoch [{} / {}]".format(epoch+1, args.epochs))
         model.train()
 
         t = time.time()
@@ -130,7 +136,7 @@ if __name__ == "__main__":
             correct += torch.count_nonzero(y == (prob > 0.5)).item()
             total += len(y)
 
-            print(f"Batch [{i}/{loopCnt}] | Epoch [{epoch}/{args.epochs}] | dt: {time.time()-t}s")
+            print(f"Batch [{i+1}/{loopCnt}] | Epoch [{epoch+1}/{args.epochs}] | dt: {time.time()-t}s")
 
             t = time.time()
 
