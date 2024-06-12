@@ -10,3 +10,4 @@ pyvenv.cfg
 /out
 /output
 /results
+__pycache__
