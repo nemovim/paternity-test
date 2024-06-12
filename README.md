@@ -5,11 +5,13 @@ Unzip all zip files.
 Make "train" and "test" directories in the "dataset" directory.
 Move all directories and files in `1.Training\원천데이터 to train` and `2.Validation\원천데이터 to test`.
 Remove whitespace in the filename to avoid exception for below five files. (between '...F_45_' and '0_0...')
-* TS0083\A(친가)\2.Individuals\F0083_IND_F_45_ 0_01.JPG
-* TS0083\A(친가)\2.Individuals\F0083_IND_F_45_ 0_02.JPG
-* TS0083\A(친가)\2.Individuals\F0083_IND_F_45_ 0_03.JPG
-* TS0083\A(친가)\2.Individuals\F0083_IND_F_45_ 0_04.JPG
-* TS0083\A(친가)\2.Individuals\F0083_IND_F_45_ 0_05.JPG
+* F0083_IND_F_45_ 0_01.JPG
+* F0083_IND_F_45_ 0_02.JPG
+* F0083_IND_F_45_ 0_03.JPG
+* F0083_IND_F_45_ 0_04.JPG
+* F0083_IND_F_45_ 0_05.JPG
+Also remove a duplicated dot in the below image's name.
+* F0390_IND_M_37_0_01..JPG
 
 # Usage
 For CMD with Windows.
@@ -41,4 +43,9 @@ python extract_dataset.py
 5. Start training
 ```
 python train.py --train_path=./dataset/train/extracted --val_path=./dataset/test/extracted -o ./out
+```
+
+6. Evaluate the trained model
+```
+python eval.py --val_path=./dataset/test/extracted -o=./result -c=./out/best.pth 
 ```

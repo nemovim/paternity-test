@@ -42,6 +42,7 @@ if __name__ == "__main__":
     os.makedirs(args.out_path, exist_ok=True)
 
     # Set device to CUDA if a CUDA device is available, else CPU
+    print('cuda: ', torch.cuda.is_available())
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     val_dataset     = Dataset(args.val_path, shuffle_pairs=False, augment=False)
@@ -65,8 +66,8 @@ if __name__ == "__main__":
                                                          std = [ 1., 1., 1. ]),
                                    ])
     
-    for i, ((img1, img2), y, (class1, class2)) in enumerate(val_dataloader):
-        print("[{} / {}]".format(i, len(val_dataloader)))
+    for i, ((img1, img2), y, (class1, class2), (path1, path2)) in enumerate(val_dataloader):
+        print("Epoch [{} / {}]".format(i, len(val_dataloader)))
 
         img1, img2, y = map(lambda x: x.to(device), [img1, img2, y])
         class1 = class1[0]
