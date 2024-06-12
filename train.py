@@ -50,7 +50,7 @@ if __name__ == "__main__":
         default=1e-4
     )
     parser.add_argument(
-        '-b',
+        '-bs',
         '--batch_size',
         type=int,
         help="Batch size to train",
