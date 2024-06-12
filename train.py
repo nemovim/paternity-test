@@ -97,7 +97,9 @@ if __name__ == "__main__":
 
     if args.load_model != 0:
         initial_epoch -= 1
-        model.load_state_dict(torch.load(os.path.join(args.out_path, f"./epoch_{args.load_model}.pth")))
+        pth = torch.load(os.path.join(args.out_path, f"./epoch_{args.load_model}.pth"))
+        model.load_state_dict(pth['model_state_dict'])
+        optimizer.load_state_dict(pth['optimizer_state_dict'])
 
     best_val = 10000000000
 
