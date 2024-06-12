@@ -16,6 +16,8 @@ class TripleSiameseNetwork(nn.Module):
         self.fc = nn.Linear(3 * 512, 2)  # ResNet18의 output은 512차원
         # Fully convolutional layer
         self.conv = nn.Conv1d(in_channels=3, out_channels=2, kernel_size=512, stride=1)  # 1D convolutional layer
+
+        self.out = nn.Sigmoid()
         
     def forward_one(self, x):
         x = self.feature_extractor(x)
@@ -42,7 +44,7 @@ class TripleSiameseNetwork(nn.Module):
             concat = torch.stack((d1, d2, d3), dim=1)
             output = self.conv(concat).squeeze(-1)  # (batch_size, 2)
 
-        output = torch.sigmoid(output)
+        output = self.out(output)
 
         return output
 
@@ -56,8 +58,11 @@ class ContrastiveLoss(nn.Module):
         # label2: 자식이 아빠의 친자식일 확률 라벨 (0 또는 1)
         prob1, prob2 = output[:, 0], output[:, 1]
         
-        loss1 = (1 - label1) * torch.pow(prob1, 2) + label1 * torch.pow(torch.clamp(self.margin - prob1, min=0.0), 2)
-        loss2 = (1 - label2) * torch.pow(prob2, 2) + label2 * torch.pow(torch.clamp(self.margin - prob2, min=0.0), 2)
+        # loss1 = (1 - label1) * torch.pow(prob1, 2) + label1 * torch.pow(torch.clamp(self.margin - prob1, min=0.0), 2)
+        # loss2 = (1 - label2) * torch.pow(prob2, 2) + label2 * torch.pow(torch.clamp(self.margin - prob2, min=0.0), 2)
+
+        loss1 = (1 - label1) * torch.pow(prob1, 2) + label1 * torch.pow(1 - prob1, 2)
+        loss2 = (1 - label2) * torch.pow(prob2, 2) + label2 * torch.pow(1 - prob2, 2)
         
         loss = torch.mean(loss1 + loss2)
         return loss

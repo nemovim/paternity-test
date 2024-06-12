@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import DataLoader
 import pandas as pd
-from tripleNet.tripleNetx import *
+from tripleNet.tripleNet3 import *
 from libs.dataset_fam import Dataset
 import time
 import os
@@ -155,13 +155,14 @@ if __name__ == '__main__':
 
     createDirectory('./out_triple')
 
-    train_dataset = Dataset('./dataset/train/families', shuffle_pairs=True, augment=True)
-    test_dataset = Dataset('./dataset/test/families', shuffle_pairs=True, augment=True)
-    train_dataloader = DataLoader(train_dataset, batch_size=32, num_workers=8, drop_last=True)
-    test_dataloader = DataLoader(test_dataset, batch_size=32, num_workers=8)
+    train_dataset = Dataset('./dataset/train/families_pt', shuffle_pairs=True, augment=True)
+    test_dataset = Dataset('./dataset/test/families_pt', shuffle_pairs=True, augment=True)
+    train_dataloader = DataLoader(train_dataset, batch_size=32, num_workers=6, drop_last=True)
+    test_dataloader = DataLoader(test_dataset, batch_size=32, num_workers=6)
     
     model = TripleSiameseNetwork(layer='conv').to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+    # optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
     criterion = ContrastiveLoss(margin=1.0)
     
     train(model, train_dataloader, test_dataloader, criterion, optimizer, num_epochs=20)

@@ -10,16 +10,20 @@ trans = transforms.Compose([
 ])
 
 path = './dataset/test/families'
-# image_paths = [*glob.glob(os.path.join(path, "*.JPG")), *glob.glob(os.path.join(path, "*.jpg"))]
-image_paths = glob.glob(os.path.join(path, "*.JPG"))
+image_paths = [*glob.glob(os.path.join(path, "*/*.JPG")), *glob.glob(os.path.join(path, "*/*.jpg"))]
+# image_paths = glob.glob(os.path.join(path, "*.JPG"))
 print(len(image_paths))
 
-for image_path in image_paths:
-  print(image_path)
+for i, image_path in enumerate(image_paths):
+  print(i, image_path)
   image = Image.open(image_path)
   image = trans(image)
 
   path_arr = image_path.split(os.path.sep)
   fileName = path_arr[-1]
   fileName = '.'.join([*fileName.split('.')[:-1], 'pt'])
-  torch.save(image, os.path.join((os.path.sep).join(path_arr[:-1]), fileName))
+  dirPath = os.path.join(f'{path}_pt', (os.path.sep).join(path_arr[:-1]))
+
+  if not os.path.exists(dirPath):
+    os.makedirs(dirPath)
+  torch.save(image, os.path.join(dirPath, fileName))
