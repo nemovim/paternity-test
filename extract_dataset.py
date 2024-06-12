@@ -34,6 +34,7 @@ def getSameImgPathSet(_imgPathArr):
     sameImgPathSet = set()
 
     for i in range(len(imgPathArr)):
+        print(f'Checking... {i}/{len(imgPathArr)}')
         for j in range(i+1, len(imgPathArr)):
             if imgNameArr[i][2:5] == imgNameArr[j][2:5] and imgNameArr[i][0] != imgNameArr[j][0]:
                 path1 = os.path.join((os.path.sep).join(imgPathArr[i][:-1]), '_'.join(imgNameArr[i][:-2]))
