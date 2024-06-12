@@ -20,20 +20,20 @@ if __name__ == "__main__":
         '--train_path',
         type=str,
         help="Path to directory containing training dataset.",
-        required=True
+        default="./dataset/train/extracted"
     )
     parser.add_argument(
         '--val_path',
         type=str,
         help="Path to directory containing validation dataset.",
-        required=True
+        default="./dataset/test/extracted"
     )
     parser.add_argument(
         '-o',
         '--out_path',
         type=str,
         help="Path for outputting model weights and tensorboard summary.",
-        required=True
+        default="./out"
     )
     parser.add_argument(
         '-b',
@@ -61,7 +61,7 @@ if __name__ == "__main__":
         '--save_after',
         type=int,
         help="Model checkpoint is saved after each specified number of epochs.",
-        default=25
+        default=5
     )
     parser.add_argument(
         '-l',

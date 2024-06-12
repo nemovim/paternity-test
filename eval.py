@@ -20,21 +20,21 @@ if __name__ == "__main__":
         '--val_path',
         type=str,
         help="Path to directory containing validation dataset.",
-        required=True
+        default="./dataset/test/extracted"
     )
     parser.add_argument(
         '-o',
         '--out_path',
         type=str,
         help="Path for saving prediction images.",
-        required=True
+        default="./results"
     )
     parser.add_argument(
         '-c',
         '--checkpoint',
         type=str,
         help="Path of model checkpoint to be used for inference.",
-        required=True
+        default="./out/best.pth"
     )
 
     args = parser.parse_args()
