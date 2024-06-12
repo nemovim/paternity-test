@@ -63,6 +63,13 @@ if __name__ == "__main__":
         help="Model checkpoint is saved after each specified number of epochs.",
         default=25
     )
+    parser.add_argument(
+        '-l',
+        '--load_model',
+        type=int,
+        help="Load pre-trained model of specified number of epochs",
+        default=0
+    )
 
     args = parser.parse_args()
 
@@ -81,6 +88,12 @@ if __name__ == "__main__":
     model = SiameseNetwork(backbone=args.backbone)
     model.to(device)
 
+    initial_epoch = args.load_model
+
+    if args.load_model != 0:
+        initial_epoch -= 1
+        model.load_state_dict(torch.load(os.path.join(args.out_path, f"./epoch_{args.load_model}.pth")))
+
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     criterion = torch.nn.BCELoss()
 
@@ -88,7 +101,7 @@ if __name__ == "__main__":
 
     best_val = 10000000000
 
-    for epoch in range(args.epochs):
+    for epoch in range(initial_epoch, args.epochs):
         print("Epoch [{} / {}]".format(epoch, args.epochs))
         model.train()
 

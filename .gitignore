@@ -7,3 +7,6 @@
 /.vscode
 /etc
 pyvenv.cfg
+/out
+/output
+/result
