@@ -59,9 +59,9 @@ class TripleSiameseNetwork(nn.Module):
         v3 = self.forward3(img3)
         
         # Distance vector 계산 (L1 distance)
-        d1 = torch.abs(v1 - v2)
-        d2 = torch.abs(v2 - v3)
-        d3 = torch.abs(v3 - v1)
+        d1 = torch.abs(torch.sub(v1,v2))
+        d2 = torch.abs(torch.sub(v2,v3))
+        d3 = torch.abs(torch.sub(v3,v1))
         
         # if self.layer == 'conn':
         #     # Fully connected layer에 통과시켜 최종 출력 계산
@@ -101,3 +101,6 @@ class ContrastiveLoss(nn.Module):
 
 
 
+if __name__ == '__main__':
+    net = TripleSiameseNetwork()
+    print(net)
